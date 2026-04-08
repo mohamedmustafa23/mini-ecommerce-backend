@@ -1,6 +1,11 @@
 
 using Microsoft.EntityFrameworkCore;
 using MiniEcommerce.API.Data;
+using MiniEcommerce.API.Repositories;
+using MiniEcommerce.API.Services;
+using MiniEcommerce.Core.Contracts;
+using MiniEcommerce.Core.Services.ServicesAbstraction;
+using Scalar.AspNetCore;
 
 namespace MiniEcommerce.API
 {
@@ -12,7 +17,9 @@ namespace MiniEcommerce.API
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -25,6 +32,7 @@ namespace MiniEcommerce.API
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.MapScalarApiReference(); 
             }
 
             app.UseHttpsRedirection();

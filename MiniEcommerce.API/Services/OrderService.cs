@@ -1,7 +1,7 @@
 ﻿using MiniEcommerce.Core.Contracts;
 using MiniEcommerce.Core.DTOs;
 using MiniEcommerce.Core.Entities;
-using MiniEcommerce.Core.Services.ServicesAbstraction;
+using MiniEcommerce.Core.ServicesAbstraction;
 using MiniEcommerce.Core.Specifications;
 
 namespace MiniEcommerce.API.Services

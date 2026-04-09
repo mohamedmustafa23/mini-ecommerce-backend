@@ -1,6 +1,6 @@
 ﻿using MiniEcommerce.Core.DTOs;
 
-namespace MiniEcommerce.Core.Services.ServicesAbstraction
+namespace MiniEcommerce.Core.ServicesAbstraction
 {
     public interface IOrderService
     {

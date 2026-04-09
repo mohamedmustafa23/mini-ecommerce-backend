@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MiniEcommerce.Core.DTOs;
-using MiniEcommerce.Core.Services.ServicesAbstraction;
+using MiniEcommerce.Core.ServicesAbstraction;
 
 namespace MiniEcommerce.API.Controllers
 {

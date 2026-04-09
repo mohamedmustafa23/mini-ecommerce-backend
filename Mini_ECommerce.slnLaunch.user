@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "MiniEcommerce.API\\MiniEcommerce.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "MiniEcommerce.Blazor\\MiniEcommerce.Blazor.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

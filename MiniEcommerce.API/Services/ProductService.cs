@@ -1,7 +1,7 @@
 ﻿using MiniEcommerce.Core.Contracts;
 using MiniEcommerce.Core.DTOs;
 using MiniEcommerce.Core.Entities;
-using MiniEcommerce.Core.Services.ServicesAbstraction;
+using MiniEcommerce.Core.ServicesAbstraction;
 using MiniEcommerce.Core.Shared;
 using MiniEcommerce.Core.Specifications;
 
@@ -35,7 +35,7 @@ namespace MiniEcommerce.API.Services
             await _uow.GetRepository<Product, int>().AddAsync(product);
             await _uow.SaveChangesAsync();
 
-            return new ProductToReturnDto { Id = product.Id, Name = product.Name, Price = product.Price };
+            return new ProductToReturnDto { Id = product.Id, Name = product.Name, Price = product.Price , AvailableQuantity = product.AvailableQuantity };
         }
     }
 }

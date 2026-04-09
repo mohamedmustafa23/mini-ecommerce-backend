@@ -15,7 +15,7 @@ namespace MiniEcommerce.Core.DTOs
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be a positive value.")]
         public decimal Price { get; set; }
-        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be >= 0")]
+        [Range(0, int.MaxValue, ErrorMessage = "Quantity must be >= 0")]
         public int AvailableQuantity { get; set; }
     }
 }

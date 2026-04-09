@@ -1,0 +1,177 @@
+﻿@page "/products"
+@using MiniEcommerce.Core.DTOs
+@using MiniEcommerce.Core.Shared
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>Products</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h3 class="mb-4">Products</h3>
+            @if (result == null)
+            {
+                <div class="text-center"><div class="spinner-border"></div></div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var product in result.Data)
+                    {
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm border-0">
+                                <div class="card-body">
+                                    <h5 class="fw-bold">@product.Name</h5>
+                                    <p class="text-success fs-5 fw-bold">@product.Price.ToString("C")</p>
+                                    <p class="text-muted small">Available: @product.AvailableQuantity</p>
+                                    <button class="btn btn-primary w-100" @onclick="() => AddToCart(product)"
+                                            disabled="@(product.AvailableQuantity <= 0)">
+                                        @(product.AvailableQuantity > 0 ? "Add to Cart" : "Out of Stock")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="d-flex justify-content-between mt-3">
+                    <button class="btn btn-outline-dark btn-sm" @onclick="PrevPage" disabled="@(pageIndex == 1)">Prev</button>
+                    <span class="small">Page @pageIndex of @TotalPages</span>
+                    <button class="btn btn-outline-dark btn-sm" @onclick="NextPage" disabled="@(pageIndex == TotalPages)">Next</button>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow border-0">
+                <div class="card-header bg-dark text-white fw-bold">🛒 Shopping Cart</div>
+                <div class="card-body">
+                    @if (!cart.Any())
+                    {
+                        <p class="text-center text-muted my-4 small">Your cart is empty.</p>
+                    }
+                    else
+                    {
+                        @foreach (var item in cart)
+                        {
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                <div style="flex: 1;">
+                                    <div class="fw-bold small">@item.ProductName</div>
+                                    <small class="text-muted">@item.Price.ToString("C")</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-sm btn-light border px-2" @onclick="() => DecreaseQuantity(item)">-</button>
+                                    <span class="mx-2 fw-bold">@item.Quantity</span>
+                                    <button class="btn btn-sm btn-light border px-2" @onclick="() => IncreaseQuantity(item)">+</button>
+                                    <button class="btn btn-sm btn-link text-danger ms-2 p-0" @onclick="() => RemoveFromCart(item)">×</button>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mt-3 p-2 bg-light rounded small">
+                            <div class="d-flex justify-content-between"><span>Subtotal (@TotalItemsCount items):</span> <span>@CartSubtotal.ToString("C")</span></div>
+                            <div class="d-flex justify-content-between text-danger"><span>Discount (@DiscountPercent%):</span> <span>-@DiscountAmount.ToString("C")</span></div>
+                            <hr class="my-1" />
+                            <div class="d-flex justify-content-between fw-bold"><span>Total:</span> <span>@CartTotal.ToString("C")</span></div>
+                        </div>
+
+                        <EditForm Model="orderModel" OnValidSubmit="PlaceOrder" class="mt-3">
+                            <DataAnnotationsValidator />
+                            <h6 class="fw-bold small mb-2 border-bottom pb-1">Checkout Details</h6>
+                            <div class="mb-2">
+                                <InputText @bind-Value="orderModel.CustomerName" class="form-control form-control-sm" placeholder="Full Name" />
+                                <ValidationMessage For="@(() => orderModel.CustomerName)" class="text-danger small" />
+                            </div>
+                            <div class="mb-3">
+                                <InputText @bind-Value="orderModel.CustomerEmail" class="form-control form-control-sm" placeholder="Email Address" />
+                                <ValidationMessage For="@(() => orderModel.CustomerEmail)" class="text-danger small" />
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 fw-bold">Confirm Order</button>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <div class="alert alert-info mt-3 small">@statusMessage</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private PaginationResult<ProductToReturnDto>? result;
+    private int pageIndex = 1;
+    private int pageSize = 4;
+    private List<CartItem> cart = new();
+    private OrderCreateDto orderModel = new() { Items = new() };
+    private string statusMessage = "";
+
+    protected override async Task OnInitializedAsync() => await LoadProducts();
+
+    private async Task LoadProducts()
+    {
+        result = await Http.GetFromJsonAsync<PaginationResult<ProductToReturnDto>>($"api/products?pageIndex={pageIndex}&pageSize={pageSize}");
+    }
+
+    private int TotalPages => result != null ? (int)Math.Ceiling((double)result.Count / pageSize) : 0;
+    private async Task NextPage() { if (pageIndex < TotalPages) { pageIndex++; await LoadProducts(); } }
+    private async Task PrevPage() { if (pageIndex > 1) { pageIndex--; await LoadProducts(); } }
+
+    private void AddToCart(ProductToReturnDto p)
+    {
+        var item = cart.FirstOrDefault(c => c.ProductId == p.Id);
+        if (item != null) IncreaseQuantity(item);
+        else cart.Add(new CartItem { ProductId = p.Id, ProductName = p.Name, Price = p.Price, Quantity = 1 });
+    }
+
+    private void IncreaseQuantity(CartItem item)
+    {
+        var product = result?.Data.FirstOrDefault(p => p.Id == item.ProductId);
+        if (product != null && item.Quantity < product.AvailableQuantity) item.Quantity++;
+        else statusMessage = "Out of stock!";
+    }
+
+    private void DecreaseQuantity(CartItem item)
+    {
+        if (item.Quantity > 1) item.Quantity--;
+        else cart.Remove(item);
+    }
+
+    private void RemoveFromCart(CartItem item) => cart.Remove(item);
+
+    private int TotalItemsCount => cart.Sum(i => i.Quantity);
+    private decimal CartSubtotal => cart.Sum(i => i.Price * i.Quantity);
+    private decimal DiscountPercent => TotalItemsCount >= 5 ? 10 : (TotalItemsCount >= 2 ? 5 : 0);
+    private decimal DiscountAmount => CartSubtotal * (DiscountPercent / 100);
+    private decimal CartTotal => CartSubtotal - DiscountAmount;
+
+    private async Task PlaceOrder()
+    {
+        statusMessage = "Processing...";
+        orderModel.Items = cart.Select(i => new OrderItemCreateDto { ProductId = i.ProductId, Quantity = i.Quantity }).ToList();
+
+        var response = await Http.PostAsJsonAsync("api/orders", orderModel);
+        if (response.IsSuccessStatusCode)
+        {
+            var res = await response.Content.ReadFromJsonAsync<OrderToReturnDto>();
+            statusMessage = $"Success! Order #{res?.Id} placed. Total: {res?.FinalTotal:C}";
+            cart.Clear();
+            orderModel = new() { Items = new() };
+            await LoadProducts();
+        }
+        else
+        {
+            statusMessage = "Error: " + await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    public class CartItem
+    {
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = "";
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+    }
+}

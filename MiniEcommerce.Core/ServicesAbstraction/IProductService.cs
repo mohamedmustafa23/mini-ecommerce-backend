@@ -1,7 +1,7 @@
 ﻿using MiniEcommerce.Core.DTOs;
 using MiniEcommerce.Core.Shared;
 
-namespace MiniEcommerce.Core.Services.ServicesAbstraction
+namespace MiniEcommerce.Core.ServicesAbstraction
 {
     public interface IProductService
     {

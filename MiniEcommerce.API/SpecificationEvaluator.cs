@@ -17,13 +17,12 @@ namespace MiniEcommerce.API
                     query = query.Where(specifications.Criteria);
                 }
 
-                // 2. Expression-based Includes (العادية)
+                // 2.Includes
                 if (specifications.IncludeExpressions is not null && specifications.IncludeExpressions.Any())
                 {
                     query = specifications.IncludeExpressions.Aggregate(query, (currentQuery, includeExpression) => currentQuery.Include(includeExpression));
                 }
 
-                // 3. String-based Includes (التعديل الجديد للـ Nested Includes)
                 if (specifications.IncludeStrings is not null && specifications.IncludeStrings.Any())
                 {
                     query = specifications.IncludeStrings.Aggregate(query, (currentQuery, includeString) => currentQuery.Include(includeString));

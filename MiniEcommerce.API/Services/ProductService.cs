@@ -16,7 +16,7 @@ namespace MiniEcommerce.API.Services
         {
             var spec = new ProductSpecifications(pageSize, pageIndex);
             var products = await _uow.GetRepository<Product, int>().GetAllAsync(spec);
-            var totalCount = await _uow.GetRepository<Product, int>().CountAsync(new BaseSpecifications<Product, int>(null!));
+            var totalCount = await _uow.GetRepository<Product, int>().CountAsync(new BaseSpecifications<Product, int>(criteriaExpression: null!));
 
             var data = products.Select(p => new ProductToReturnDto
             {
